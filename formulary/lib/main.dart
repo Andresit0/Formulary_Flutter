@@ -27,13 +27,67 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  TextEditingController controllerUsername = new TextEditingController();
+  TextEditingController controllerPassword = new TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final FocusNode focusIP = FocusNode();
+  final FocusNode focusDb = FocusNode();
+
+  void error() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Fix Information"),
+          content: const Text('Review red text'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void informationCompleted() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("All is Correct"),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    TextEditingController controllerUsername = new TextEditingController();
-    TextEditingController controllerPassword = new TextEditingController();
-    final _formKey = GlobalKey<FormState>();
-    final FocusNode focusIP = FocusNode();
-    final FocusNode focusDb = FocusNode();
+    valuesNotAcepted(textInserted) {
+      if (textInserted == null || textInserted.isEmpty) {
+        return 'Complete all fields';
+      } else {
+        List<String> valuesNotAcepted = ["'", '"'];
+        for (int i = 0; i < valuesNotAcepted.length; i++) {
+          if (textInserted.contains(valuesNotAcepted[i])) {
+            return 'Does not allow symbol:   ' + valuesNotAcepted[i];
+          }
+        }
+      }
+      return null;
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -44,10 +98,11 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: EdgeInsets.all(10),
             child: Form(
               key: _formKey,
-              child: ListView(
+              child: Column(
                 children: [
                   Text('Using only ICONS'),
                   TextFormField(
+                    validator: valuesNotAcepted,
                     autofocus: true,
                     focusNode: focusIP,
                     onFieldSubmitted: (v) {
@@ -88,6 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             focusNode: focusDb,
                             keyboardType: TextInputType.text,
                             textInputAction: TextInputAction.done,
+                            validator: valuesNotAcepted,
                             onFieldSubmitted: (term) {
                               //Finish in the same field
                               FocusScope.of(context).requestFocus(focusDb);
@@ -114,6 +170,22 @@ class _MyHomePageState extends State<MyHomePage> {
                       color: Colors.white70,
                       border: Border.all(color: Colors.purple, width: 2),
                       borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  Padding(padding: EdgeInsets.only(top: 10)),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    color: Colors.blue,
+                    child: IconButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          informationCompleted();
+                        } else {
+                          error();
+                        }
+                      },
+                      icon: Icon(Icons.check),
                     ),
                   ),
                 ],
